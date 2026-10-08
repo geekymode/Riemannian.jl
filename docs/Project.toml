@@ -1,0 +1,8 @@
+[deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Riemannian = "fe737cda-1b18-4f56-9912-42c23ac670e4"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+
+[sources]
+Riemannian = {path = ".."}
