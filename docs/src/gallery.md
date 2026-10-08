@@ -75,6 +75,14 @@ plot_zeta_spiral(tmax = 35)
 ```
 
 ```@example gal
+plot_partial_sum_spiral(zero_t = KNOWN_ZEROS[2], other_t = 23.0)
+```
+
+```@example gal
+plot_zeta_near_origin(tmax = 60, window = 0.8)
+```
+
+```@example gal
 plot_zero_counting(T = 200)
 ```
 

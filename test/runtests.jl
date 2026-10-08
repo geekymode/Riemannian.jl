@@ -45,6 +45,13 @@ using Test
         @test zeta_borwein(s) ≈ zeta(s) rtol = 1e-12
         @test zeta_em(s; N = 50, M = 20) ≈ zeta(s) rtol = 1e-12
         @test dirichlet_eta(1) ≈ log(2)
+        # spiral paths: corrected sums converge to ζ(s) (→ 0 at a zero), raw sums wind around it
+        ρ = complex(0.5, KNOWN_ZEROS[1])
+        @test abs(last(partial_sums(ρ, 4000; corrected = true))) < 1e-5
+        @test abs(last(partial_sums(ρ, 2000; series = :eta, corrected = true))) < 1e-4
+        S = partial_sums(0.5 + 18im, 2000)
+        @test abs(abs(S[end] - zeta(0.5 + 18im)) - abs(2000^(0.5 - 18im) / (0.5 - 18im))) < 0.05
+        @test partial_sums(2, 3) ≈ [1, 1.25, 1.25 + 1 / 9]
         @test abs(euler_product_partial(3, 10^4) - zeta(3)) < 1e-8
         # BigFloat
         setprecision(BigFloat, 256) do

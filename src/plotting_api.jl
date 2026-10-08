@@ -29,6 +29,9 @@ const _PLOT_FUNCTIONS = (
     plot_critical_strip = "Horizontal view of the band 0 < Re s < 1 over a log|ζ| heatmap, with the nontrivial zeros. `(; tmax = 100, σlims = (-1.5, 2.5))`",
     plot_strip_schematic = "Schematic of the complex plane: Re s > 1, the critical strip, Re s < 0, with trivial and nontrivial zeros. `(; tmax = 50)`",
     plot_strip_width = "Is the band of fixed width? Strip vs proven zero-free region vs verified height. `(; log10tmax = 40)`",
+    plot_partial_sum_spiral = "Vector-chain spirals of the partial sums of ζ, with a zoom on the centre, at a zero (centre = origin) and off a zero. `(; zero_t = KNOWN_ZEROS[1], other_t = 18.0, N = 400, Nzoom = 4000)`",
+    plot_zeta_near_origin = "Zoom on 0: ζ(σ+it) for σ = 0.4, 0.5, 0.6; only the critical line passes through the origin. `(; tmax = 40, window = 0.5)`",
+    record_zeta_spiral = "Animated GIF/MP4: the critical-line curve being traced, with the partial-sum spiral whose centre is ζ(1/2+it). `record_zeta_spiral(\"spiral.gif\"; tmax = 50, frames = 150)`",
     gallery = "Render every plot into a directory: `gallery(\"figures\")`.",
 )
 

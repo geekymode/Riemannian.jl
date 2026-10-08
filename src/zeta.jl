@@ -199,3 +199,39 @@ Riemann's Ξ(t) = ξ(1/2 + it), a *real* even function of real t. RH ⇔ all zer
 Decays like t^{7/4} e^{−πt/4}, so it underflows in Float64 for t ≳ 900.
 """
 Xi(t::Real) = real(xi(complex(oftype(float(t), 0.5), float(t))))
+
+# ── partial sums as paths in the complex plane ───────────────────────────────
+
+"""
+    partial_sums(s, N; series = :zeta, corrected = false) -> Vector{Complex}
+
+The path of partial sums Sₙ = Σ_{k≤n} aₖ, n = 1…N, of the Dirichlet series for ζ (`aₖ = k⁻ˢ`)
+or η (`aₖ = (−1)^{k−1} k⁻ˢ`). Drawn as a chain of vectors, this is the classic "spiral" picture:
+
+* `:zeta`, raw: for 0 < Re s < 1 the sum diverges, and once k ≳ |t|/2π the path becomes a spiral
+  winding *outward* around ζ(s) (Sₙ − ζ(s) ≈ n^{1−s}/(1−s)).
+* `:zeta`, `corrected = true`: Sₙ + n^{1−s}/(s−1) − n^{−s}/2 (Euler–Maclaurin) spirals *inward* to ζ(s).
+* `:eta`, raw: zig-zags toward η(s) = (1 − 2^{1−s}) ζ(s); `corrected = true` averages consecutive
+  sums, which converges much faster. The remaining error still alternates in sign, so plot every
+  other point (`[2:2:end]`) for a smooth inward spiral.
+
+At a nontrivial zero the spiral's centre is the origin.
+"""
+function partial_sums(s::Number, N::Integer; series::Symbol = :zeta, corrected::Bool = false)
+    series in (:zeta, :eta) || throw(ArgumentError("series must be :zeta or :eta"))
+    z = complex(float(s))
+    T = real(typeof(z))
+    S = Vector{typeof(z)}(undef, N + 1)
+    acc = zero(z)
+    for n in 1:N+1
+        term = exp(-z * log(T(n)))
+        acc += (series === :eta && iseven(n)) ? -term : term
+        S[n] = acc
+    end
+    corrected || return S[1:N]
+    if series === :zeta
+        return [S[n] + exp((1 - z) * log(T(n))) / (z - 1) - exp(-z * log(T(n))) / 2 for n in 1:N]
+    else
+        return [(S[n] + S[n+1]) / 2 for n in 1:N]
+    end
+end

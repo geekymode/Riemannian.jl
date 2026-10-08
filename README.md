@@ -55,7 +55,8 @@ CairoMakie is a weak dependency, and `using CairoMakie` activates `ext/Riemannia
 `plot_critical_line` · `plot_zeta_spiral` · `plot_zero_counting` · `plot_xi` · `plot_explicit_formula` ·
 `plot_prime_staircase` · `plot_spacing_distribution` · `plot_pair_correlation` · `plot_robin` ·
 `plot_zero_density` · `plot_heat_flow` · `plot_timeline` · `plot_critical_strip` · `plot_strip_schematic` ·
-`plot_strip_width` · `gallery`
+`plot_strip_width` · `plot_partial_sum_spiral` · `plot_zeta_near_origin` · `record_zeta_spiral` (animated GIF) ·
+`gallery`
 
 Continuous colour scales use **viridis**.
 
@@ -65,6 +66,7 @@ Continuous colour scales use **viridis**.
 |---|---|
 | ![](figures/10_critical_line.png) | ![](figures/15_prime_staircase.png) |
 | ![](figures/16_spacing_distribution.png) | ![](figures/20_heat_flow.png) |
+| ![](figures/25_partial_sum_spiral.png) | ![](figures/zeta_spiral.gif) |
 
 ## How it works (numerics)
 

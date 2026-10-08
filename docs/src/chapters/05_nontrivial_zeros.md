@@ -77,6 +77,41 @@ Off the line, at ``\sigma = 0.6``, the curve misses the origin, at least for the
 plot_zeta_spiral()
 ```
 
+### Spirals near zero
+
+There is a second spiral picture, popularised by Quanta Magazine's explainer. Fix ``s = \tfrac12 + it`` and draw
+the terms ``1, 2^{-s}, 3^{-s}, \dots`` head to tail, as a chain of vectors. The ``n``-th vector has length
+``n^{-1/2}`` and turns by ``-t\log n``. Once ``n \gtrsim t/2\pi`` consecutive vectors point in nearly the same
+direction, and the chain becomes a smooth spiral.
+
+On the critical line the series diverges, so the raw chain spirals **outward**, but it winds around a fixed
+centre: ``S_n - \zeta(s) \approx \frac{n^{1-s}}{1-s}``. The centre is exactly ``\zeta(s)``. Subtracting the
+Euler–Maclaurin correction (`partial_sums(s, N; corrected = true)`) turns the outward spiral into one that winds
+**inward** onto the centre. At a nontrivial zero that centre is the origin:
+
+```@example ch5
+plot_partial_sum_spiral()
+```
+
+Zooming in on the origin itself, the curve ``t \mapsto \zeta(\sigma + it)`` passes **through** 0 only for
+``\sigma = \tfrac12``, once for every zero. The lines ``\sigma = 0.4`` and ``0.6`` loop around the origin but never
+touch it, at least at these heights:
+
+```@example ch5
+plot_zeta_near_origin()
+```
+
+Putting the two together as an animation, the left panel traces ``\zeta(\tfrac12 + it)`` while the right panel shows
+the vector-chain spiral at the current ``t``. Its centre is the orange point, which passes through the origin at each
+zero:
+
+```@example ch5
+record_zeta_spiral("zeta_spiral.gif"; tmax = 40, frames = 120, framerate = 12)
+nothing # hide
+```
+
+![animated spiral of partial sums along the critical line](zeta_spiral.gif)
+
 ## The Riemann–Siegel formula
 
 Computing ``\zeta(\tfrac12 + it)`` by Euler–Maclaurin costs ``O(t)`` operations. Siegel (1932), working from
@@ -200,4 +235,4 @@ close_pairs(nontrivial_zeros(3000); k = 3)
 [`gram_point`](@ref), [`gram_points`](@ref), [`gram_law_violations`](@ref), [`argzeta_S`](@ref),
 [`riemann_von_mangoldt`](@ref), [`zero_count`](@ref), [`zeros_between`](@ref),
 [`nontrivial_zeros`](@ref), [`check_zeros`](@ref), [`close_pairs`](@ref), [`RH_VERIFIED_HEIGHT`](@ref),
-[`zero_free_boundary`](@ref).
+[`zero_free_boundary`](@ref), [`partial_sums`](@ref).

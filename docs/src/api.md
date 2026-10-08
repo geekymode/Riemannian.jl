@@ -63,6 +63,7 @@ completed_zeta
 xi
 Xi
 loggamma_c
+partial_sums
 ```
 
 ## Zeros
@@ -169,6 +170,9 @@ plot_timeline
 plot_critical_strip
 plot_strip_schematic
 plot_strip_width
+plot_partial_sum_spiral
+plot_zeta_near_origin
+record_zeta_spiral
 gallery
 ```
 

@@ -40,7 +40,7 @@ export sieve, isprime, primepi, primepi_table, nthprime, factorize, prime_gaps, 
 # 2. Zeta function: series, products, continuation
 export bernoulli, zeta_even_exact, zeta_negint_exact,
        dirichlet_partial, euler_product_partial, eta_partial,
-       dirichlet_eta, zeta_borwein, zeta_em, zeta, chi_factor, completed_zeta, xi, Xi,
+       dirichlet_eta, zeta_borwein, zeta_em, zeta, chi_factor, completed_zeta, xi, Xi, partial_sums,
        loggamma_c
 
 # 3. Zeros
@@ -72,6 +72,7 @@ export riemann_theme, plot_prime_counting, plot_prime_gaps, plot_chebyshev, plot
        plot_modulus_surface, plot_critical_line, plot_zeta_spiral, plot_zero_counting,
        plot_explicit_formula, plot_prime_staircase, plot_spacing_distribution,
        plot_pair_correlation, plot_xi, plot_robin, plot_zero_density, plot_heat_flow,
-       plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width, gallery
+       plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width,
+       plot_partial_sum_spiral, plot_zeta_near_origin, record_zeta_spiral, gallery
 
 end # module

@@ -8,7 +8,8 @@ import Riemannian: riemann_theme, plot_prime_counting, plot_prime_gaps, plot_che
     plot_domain_coloring, plot_modulus_surface, plot_critical_line, plot_zeta_spiral,
     plot_zero_counting, plot_explicit_formula, plot_prime_staircase, plot_spacing_distribution,
     plot_pair_correlation, plot_xi, plot_robin, plot_zero_density, plot_heat_flow,
-    plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width, gallery
+    plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width,
+    plot_partial_sum_spiral, plot_zeta_near_origin, record_zeta_spiral, gallery
 
 # ── palette & theme ──────────────────────────────────────────────────────────
 # Categorical slots in fixed order (validated for colour-vision deficiency on adjacent pairs).
@@ -650,6 +651,125 @@ function plot_strip_width(; log10tmax = 40)
     end
 end
 
+# ── Spirals: partial sums and the critical-line curve near 0 ─────────────────
+
+# Path z₀, S₁, S₂, … as points. (Not `vcat(Point2f(…), pts)`: a Point2f is a static vector,
+# so vcat would splice in its coordinates instead of prepending a point.)
+_path(S, z0 = 0) = pushfirst!(Point2f.(real.(S), imag.(S)), Point2f(real(z0), imag(z0)))
+
+# Colour values for a path of n points. Float, not an integer range: CairoMakie is pathologically
+# slow on integer colour vectors.
+_ramp(n) = collect(range(0.0, 1.0; length = n))
+
+# A chain of vectors coloured by index (viridis), from z₀ through S₁, S₂, …
+function _vector_chain!(ax, S, z0 = 0; linewidth = 1.6)
+    pts = _path(S, z0)
+    lines!(ax, pts; color = _ramp(length(pts)), colormap = CMAP, linewidth)
+end
+
+function plot_partial_sum_spiral(; zero_t = KNOWN_ZEROS[1], other_t = 18.0, N = 400, Nzoom = 4000)
+    _themed() do
+        fig = Figure(size = (1250, 1050))
+        Label(fig[0, 1:2], "Partial sums spiral around ζ(s), and at a zero the spiral closes in on the origin";
+              fontsize = 18, font = :bold, halign = :left, tellwidth = false)
+        for (row, t) in enumerate((zero_t, other_t))
+            s = complex(0.5, t)
+            ζs = zeta(s)
+            isz = abs(ζs) < 1e-8
+            tag = isz ? "s = 1/2 + $(round(t; digits = 4))i (a zero)" : "s = 1/2 + $(t)i (not a zero)"
+            mark!(ax, w, lbl) = (scatter!(ax, [real(w)], [imag(w)]; color = isz ? :white : SERIES[2],
+                                          strokecolor = INK, strokewidth = 2, markersize = 12);
+                                 text!(ax, real(w), imag(w); text = lbl, offset = (10, -14), fontsize = 13,
+                                       color = INK, _HALO...))
+            origin!(ax) = scatter!(ax, [0], [0]; marker = :cross, color = INK, markersize = 14)
+
+            # 1. Dirichlet series: raw sums spiral outward, corrected sums spiral in
+            ax = Axis(fig[row, 1]; title = "Σ n⁻ˢ   $tag", aspect = DataAspect(), xlabel = "Re", ylabel = "Im",
+                      subtitle = "raw sums wind outward around ζ(s); corrected sums (orange) wind in")
+            _vector_chain!(ax, partial_sums(s, N))
+            C = partial_sums(s, N; corrected = true)
+            lines!(ax, real.(C), imag.(C); color = SERIES[2], linewidth = 2)
+            origin!(ax); mark!(ax, ζs, isz ? "ζ(s) = 0" : "ζ(s)")
+
+            # 2. zoom on the centre: tail n ≥ n₀ ≈ t of the corrected ζ sums. Their error ≈ −(s/12) n^{−s−1}
+            #    rotates smoothly (phase −t log n) while shrinking: an inward spiral onto ζ(s).
+            Cz = partial_sums(s, Nzoom; corrected = true)
+            n0 = max(10, round(Int, t))
+            r = 1.15 * maximum(abs.(Cz[n0:end] .- ζs))
+            axz = Axis(fig[row, 2]; title = "zoom on the centre (terms $n0…$Nzoom)", aspect = DataAspect(),
+                       subtitle = isz ? "corrected sums spiral into the origin" : "corrected sums spiral into ζ(s) ≠ 0",
+                       xlabel = "Re", ylabel = "Im",
+                       limits = (real(ζs) - r, real(ζs) + r, imag(ζs) - r, imag(ζs) + r))
+            tail = Point2f.(real.(Cz[n0:end]), imag.(Cz[n0:end]))
+            lines!(axz, tail; color = log.(n0:Nzoom), colormap = CMAP, linewidth = 1.8)   # log n: most terms crowd the centre
+            origin!(axz); mark!(axz, ζs, isz ? "0" : "ζ(s)")
+        end
+        Colorbar(fig[1:2, 3]; colormap = CMAP, limits = (0, 1), label = "progress through the terms (zoom: log scale)",
+                 ticks = ([0, 1], ["first", "last"]))
+        fig
+    end
+end
+
+function plot_zeta_near_origin(; tmax = 40, σs = (0.4, 0.5, 0.6), window = 0.5, nt = 8000)
+    _themed() do
+        ts = range(1, tmax; length = nt)
+        γ = filter(<(tmax), nontrivial_zeros(round(Int, tmax / 2) + 5))
+        fig = Figure(size = (1200, 600))
+        ax = Axis(fig[1, 1]; title = "Zoom on the origin", aspect = DataAspect(),
+                  subtitle = "t ↦ ζ(σ + it), 1 ≤ t ≤ $tmax: only σ = 1/2 hits 0, once per zero",
+                  xlabel = "Re ζ", ylabel = "Im ζ", limits = (-window, window, -window, window))
+        for (k, σ) in enumerate(σs)
+            w = [zeta(complex(σ, t)) for t in ts]
+            lines!(ax, real.(w), imag.(w); color = σ == 0.5 ? SERIES[1] : (SERIES[k == 1 ? 2 : 3], 0.9),
+                   linewidth = σ == 0.5 ? 2 : 1.3, label = "σ = $σ")
+        end
+        scatter!(ax, [0], [0]; marker = :cross, color = INK, markersize = 16)
+        axislegend(ax; position = :lt, backgroundcolor = (:white, 0.9), framevisible = true, framecolor = (:white, 0))
+
+        ax2 = Axis(fig[1, 2]; title = "Distance from 0", subtitle = "|ζ(σ + it)| along each line: only σ = 1/2 reaches 0, at the zeros γₙ (dotted)",
+                   xlabel = "t", ylabel = "|ζ(σ + it)|", yscale = log10)
+        for (k, σ) in enumerate(σs)
+            lines!(ax2, ts, t -> max(abs(zeta(complex(σ, t))), 1e-16);
+                   color = σ == 0.5 ? SERIES[1] : SERIES[k == 1 ? 2 : 3], linewidth = σ == 0.5 ? 1.6 : 1.2)
+        end
+        vlines!(ax2, γ; color = (MUTED, 0.6), linestyle = :dot, linewidth = 1)
+        ylims!(ax2, 1e-3, 10)
+        fig
+    end
+end
+
+function record_zeta_spiral(path::AbstractString = "zeta_spiral.gif"; tmax = 50, frames = 150,
+                            framerate = 15, N = 300)
+    with_theme(riemann_theme()) do
+        ts_all = range(0, tmax; length = 4000)
+        curve = [zeta(complex(0.5, t)) for t in ts_all]
+        tnow = Observable(0.5)
+        fig = Figure(size = (1000, 500))
+        ax1 = Axis(fig[1, 1]; title = "t ↦ ζ(1/2 + it)", aspect = DataAspect(), xlabel = "Re", ylabel = "Im",
+                   limits = (-1.5, 4, -2.5, 2.5))
+        upto = @lift findlast(<=($tnow), ts_all)
+        trace = @lift Point2f.(real.(curve[1:$upto]), imag.(curve[1:$upto]))
+        lines!(ax1, trace; color = SERIES[1], linewidth = 1.5)
+        scatter!(ax1, [0], [0]; marker = :cross, color = INK, markersize = 14)
+        head = @lift Point2f(reim(zeta(complex(0.5, $tnow)))...)
+        scatter!(ax1, head; color = SERIES[2], markersize = 12)
+        label = @lift "t = $(round($tnow; digits = 2))"
+        text!(ax1, -1.4, 2.3; text = label, fontsize = 14, color = INK)
+
+        ax2 = Axis(fig[1, 2]; title = "partial sums of Σ n⁻ˢ (n ≤ $N)", aspect = DataAspect(),
+                   subtitle = "the vector chain spirals around ζ(1/2 + it): through 0 exactly at a zero",
+                   xlabel = "Re", ylabel = "Im", limits = (-1.5, 4, -2.5, 2.5))
+        chain = @lift _path(partial_sums(complex(0.5, $tnow), N))
+        lines!(ax2, chain; color = _ramp(N + 1), colormap = CMAP, linewidth = 1.4)
+        scatter!(ax2, [0], [0]; marker = :cross, color = INK, markersize = 14)
+        scatter!(ax2, head; color = SERIES[2], strokecolor = :white, strokewidth = 1.5, markersize = 12)
+        record(fig, path, range(0.5, tmax; length = frames); framerate) do t
+            tnow[] = t
+        end
+        path
+    end
+end
+
 # ── gallery ──────────────────────────────────────────────────────────────────
 
 function gallery(dir::AbstractString = "figures"; px_per_unit = 2, quick = false)
@@ -679,8 +799,14 @@ function gallery(dir::AbstractString = "figures"; px_per_unit = 2, quick = false
         "22_critical_strip" => () -> plot_critical_strip(; nt = quick ? 500 : 1400, nσ = quick ? 100 : 260),
         "23_strip_schematic" => () -> plot_strip_schematic(),
         "24_strip_width" => () -> plot_strip_width(),
+        "25_partial_sum_spiral" => () -> plot_partial_sum_spiral(),
+        "26_zeta_near_origin" => () -> plot_zeta_near_origin(; nt = quick ? 3000 : 8000),
     ]
     paths = String[]
+    gif = joinpath(dir, "zeta_spiral.gif")
+    t = @elapsed record_zeta_spiral(gif; tmax = 40, frames = quick ? 40 : 120, framerate = 12)
+    @info "saved $gif ($(round(t; digits = 1)) s)"
+    push!(paths, gif)
     for (name, f) in plots
         path = joinpath(dir, name * ".png")
         t = @elapsed save(path, f(); px_per_unit)
