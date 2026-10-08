@@ -4,7 +4,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 const _PLOT_FUNCTIONS = (
-    riemann_theme = "Makie theme used by all plots (apply with `set_theme!(riemann_theme())`).",
+    riemann_theme = "Makie theme used by all plots (apply with `set_theme!(riemann_theme())`). Continuous colour scales use viridis.",
     plot_prime_counting = "π(x) staircase vs x/log x, li(x), R(x); and their errors at larger x. `(; xmax = 100, xbig = 10^6)`",
     plot_prime_gaps = "Prime gaps vs p with the log²p (Cramér) envelope. `(; N = 10^6)`",
     plot_chebyshev = "ψ(x) and ϑ(x) against x. `(; xmax = 200)`",
@@ -26,6 +26,9 @@ const _PLOT_FUNCTIONS = (
     plot_zero_density = "Zero-density exponents: Ingham, Huxley, Guth–Maynard, density hypothesis.",
     plot_heat_flow = "de Bruijn–Newman: real zeros of H_t moving with t. `(; ts = range(-12, 2; length = 36), zmax = 110)`",
     plot_timeline = "Timeline of milestones from `breakthroughs()`.",
+    plot_critical_strip = "Horizontal view of the band 0 < Re s < 1 over a log|ζ| heatmap, with the nontrivial zeros. `(; tmax = 100, σlims = (-1.5, 2.5))`",
+    plot_strip_schematic = "Schematic of the complex plane: Re s > 1, the critical strip, Re s < 0, with trivial and nontrivial zeros. `(; tmax = 50)`",
+    plot_strip_width = "Is the band of fixed width? Strip vs proven zero-free region vs verified height. `(; log10tmax = 40)`",
     gallery = "Render every plot into a directory: `gallery(\"figures\")`.",
 )
 

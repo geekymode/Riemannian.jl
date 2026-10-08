@@ -46,7 +46,8 @@ export bernoulli, zeta_even_exact, zeta_negint_exact,
 # 3. Zeros
 export trivial_zeros, KNOWN_ZEROS, riemann_siegel_theta, hardy_Z, riemann_siegel_Z,
        gram_point, gram_points, gram_law_violations, argzeta_S, zero_count,
-       riemann_von_mangoldt, zeros_between, nontrivial_zeros, check_zeros, close_pairs
+       riemann_von_mangoldt, zeros_between, nontrivial_zeros, check_zeros, close_pairs,
+       RH_VERIFIED_HEIGHT, zero_free_boundary
 
 # 4. Explicit formulas
 export psi_explicit, riemann_J, riemann_J_explicit, primepi_explicit
@@ -71,6 +72,6 @@ export riemann_theme, plot_prime_counting, plot_prime_gaps, plot_chebyshev, plot
        plot_modulus_surface, plot_critical_line, plot_zeta_spiral, plot_zero_counting,
        plot_explicit_formula, plot_prime_staircase, plot_spacing_distribution,
        plot_pair_correlation, plot_xi, plot_robin, plot_zero_density, plot_heat_flow,
-       plot_timeline, gallery
+       plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width, gallery
 
 end # module

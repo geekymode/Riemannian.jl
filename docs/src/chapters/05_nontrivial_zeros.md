@@ -20,6 +20,17 @@ would therefore come with three partners, ``\bar\rho``, ``1-\rho`` and ``1-\bar\
     ``\beta = \tfrac12`` for every nontrivial zero.
 
 ```@example ch5
+plot_strip_schematic()
+```
+
+Turning the picture on its side, here is the band itself over the landscape ``\log|\zeta(\sigma + it)|``.
+Every zero is a dark well, and every well sits on the line ``\sigma = \tfrac12``:
+
+```@example ch5
+plot_critical_strip()
+```
+
+```@example ch5
 γ = nontrivial_zeros(10)
 ```
 
@@ -130,6 +141,49 @@ gram_point(0), gram_point(126)
 gram_law_violations(300)
 ```
 
+## Is the band of fixed width?
+
+There are two different "bands" here, and they behave differently.
+
+**1. The critical strip ``0 < \operatorname{Re} s < 1`` has fixed width 1.** It is not a statement about
+zeros. It is simply the region that the two elementary facts leave open: the Euler product rules out
+``\operatorname{Re} s > 1``, and the functional equation mirrors that to ``\operatorname{Re} s < 0``. These
+boundaries do not depend on the height ``t``.
+
+**2. The band where zeros could still be hiding is not of fixed width.** What has actually been proved depends
+on ``t``:
+
+* **Up to ``t = 3\cdot10^{12}`` the band has width 0.** Platt and Trudgian (2021) verified, by the
+  sign-change and counting method above ([`check_zeros`](@ref) is a toy version), that every zero there lies
+  exactly on the line ([`RH_VERIFIED_HEIGHT`](@ref)).
+* **Above that height, only zero-free regions narrow the strip.** For example
+  ```math
+  \zeta(\sigma+it) \neq 0 \quad\text{for}\quad \sigma \ge 1 - \frac{1}{5.573412\,\log t}\qquad (t \ge 2)
+  ```
+  (Mossinghoff–Trudgian 2015), and by symmetry also for ``\sigma \le \frac{1}{5.573412\log t}``. The excluded
+  slivers have width about ``1/\log t``, which **shrinks to 0** as ``t \to \infty``. So the band where zeros are
+  not yet excluded *widens* towards the full width 1 the higher you go. The Vinogradov–Korobov region,
+  ``1-\sigma \gg (\log t)^{-2/3}(\log\log t)^{-1/3}``, shrinks more slowly, but it still shrinks.
+  [`zero_free_boundary`](@ref) evaluates both.
+* **Statistically, the zeros crowd toward the line.** Bohr and Landau (1914) showed that for every
+  ``\varepsilon > 0``, all but an infinitesimal proportion of the zeros lie within ``\varepsilon`` of the
+  critical line, and zero-density estimates ([Chapter 8](@ref ch-equivalents)) make this quantitative.
+  So *almost all* zeros lie in an arbitrarily thin band, but no proof rules out a sparse set of exceptions
+  near the edges.
+* **RH says the band is a single line, of width 0, at every height.**
+
+```@example ch5
+zero_free_boundary(1e12), zero_free_boundary(1e100)
+```
+
+```@example ch5
+1 - zero_free_boundary(1e100; method = :vinogradov_korobov)
+```
+
+```@example ch5
+plot_strip_width()
+```
+
 ## Close pairs (Lehmer's phenomenon)
 
 Occasionally two zeros come extremely close together, and ``Z`` barely crosses the axis between them.
@@ -145,4 +199,5 @@ close_pairs(nontrivial_zeros(3000); k = 3)
 [`KNOWN_ZEROS`](@ref), [`riemann_siegel_theta`](@ref), [`hardy_Z`](@ref), [`riemann_siegel_Z`](@ref),
 [`gram_point`](@ref), [`gram_points`](@ref), [`gram_law_violations`](@ref), [`argzeta_S`](@ref),
 [`riemann_von_mangoldt`](@ref), [`zero_count`](@ref), [`zeros_between`](@ref),
-[`nontrivial_zeros`](@ref), [`check_zeros`](@ref), [`close_pairs`](@ref).
+[`nontrivial_zeros`](@ref), [`check_zeros`](@ref), [`close_pairs`](@ref), [`RH_VERIFIED_HEIGHT`](@ref),
+[`zero_free_boundary`](@ref).

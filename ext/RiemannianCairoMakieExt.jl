@@ -8,7 +8,7 @@ import Riemannian: riemann_theme, plot_prime_counting, plot_prime_gaps, plot_che
     plot_domain_coloring, plot_modulus_surface, plot_critical_line, plot_zeta_spiral,
     plot_zero_counting, plot_explicit_formula, plot_prime_staircase, plot_spacing_distribution,
     plot_pair_correlation, plot_xi, plot_robin, plot_zero_density, plot_heat_flow,
-    plot_timeline, gallery
+    plot_timeline, plot_critical_strip, plot_strip_schematic, plot_strip_width, gallery
 
 # ── palette & theme ──────────────────────────────────────────────────────────
 # Categorical slots in fixed order (validated for colour-vision deficiency on adjacent pairs).
@@ -18,7 +18,8 @@ const INK2 = "#52514e"        # secondary text
 const MUTED = "#8a8984"       # axes, guides
 const GRID = "#e8e7e3"
 const SURFACE = "#fcfcfb"
-const SEQ = ["#cde2fb", "#86b6ef", "#3987e5", "#256abf", "#184f95", "#0d366b"]  # sequential blue
+const CMAP = :viridis        # every continuous colour scale
+const VIRIDIS = Makie.to_colormap(CMAP)
 
 function riemann_theme()
     Theme(
@@ -27,6 +28,7 @@ function riemann_theme()
         backgroundcolor = SURFACE,
         textcolor = INK,
         palette = (color = SERIES,),
+        colormap = CMAP,
         Axis = (
             backgroundcolor = SURFACE,
             xgridcolor = GRID, ygridcolor = GRID,
@@ -196,13 +198,15 @@ function plot_analytic_continuation(; σmin = -3, σmax = 3)
     end
 end
 
-# Wegert-style phase portrait: hue = arg ζ(s), brightness shows log₂|ζ| contour bands.
+# Phase portrait: colour = arg ζ(s) through viridis (jump at arg = ±π, so the branch cuts
+# from each zero show as sharp edges), brightness bands mark doublings of |ζ|.
 function _phase_color(z)
     (isfinite(z) && !iszero(z)) || return Colors.RGB(0.0, 0.0, 0.0)
-    h = mod(rad2deg(angle(z)), 360)
+    x = (angle(z) + π) / 2π
+    c = VIRIDIS[clamp(round(Int, x * (length(VIRIDIS) - 1)) + 1, 1, length(VIRIDIS))]
     m = log2(abs(z))
-    v = 0.72 + 0.28 * (m - floor(m))
-    return Colors.RGB(Colors.HSV(h, 0.85, v))
+    v = 0.62 + 0.38 * (m - floor(m))
+    return Colors.RGB(v * Colors.red(c), v * Colors.green(c), v * Colors.blue(c))
 end
 
 function plot_domain_coloring(; re = (-9, 10), im = (-4, 36), n = 600, nzeros = 20)
@@ -220,7 +224,7 @@ function plot_domain_coloring(; re = (-9, 10), im = (-4, 36), n = 600, nzeros = 
         end
         fig = Figure()
         ax = Axis(fig[1, 1]; title = "Phase portrait of ζ(s)",
-                  subtitle = "hue = arg ζ(s); brightness bands = |ζ| doubling", xlabel = "Re s", ylabel = "Im s",
+                  subtitle = "colour = arg ζ(s) (viridis); brightness bands = |ζ| doubling", xlabel = "Re s", ylabel = "Im s",
                   xticks = -20:4:20, yticks = -40:10:80)
         image!(ax, re[1] .. re[2], im[1] .. im[2], img)
         limits!(ax, re..., im...)
@@ -245,7 +249,7 @@ function plot_domain_coloring(; re = (-9, 10), im = (-4, 36), n = 600, nzeros = 
         key = [abs(complex(a, b)) ≤ 1 ? _phase_color(complex(a, b) * 1.5) : Colors.RGB(0.988, 0.988, 0.984)
                for a in r, b in r]
         image!(axk, -1 .. 1, -1 .. 1, key)
-        text!(axk, [1.05, -1.05, 0, 0], [0, 0, 1.05, -1.05]; text = ["0", "π", "π/2", "−π/2"],
+        text!(axk, [1.05, -1.05, 0, 0], [0, 0, 1.05, -1.05]; text = ["0", "±π", "π/2", "−π/2"],
               align = [(:left, :center), (:right, :center), (:center, :bottom), (:center, :top)],
               fontsize = 11, color = INK2)
         limits!(axk, -1.6, 1.6, -1.6, 1.6)
@@ -263,7 +267,8 @@ function plot_modulus_surface(; re = (-1, 2), im = (0, 40), n = 220)
         ax = Axis3(fig[1, 1]; title = "The landscape log|ζ(s)|",
                    xlabel = "Re s", ylabel = "Im s", zlabel = "log|ζ|",
                    azimuth = 1.25π, elevation = 0.18π, aspect = (1, 2.2, 0.7))
-        surface!(ax, xs, ys, Zs; colormap = SEQ, shading = NoShading)
+        surface!(ax, xs, ys, Zs; colormap = CMAP, shading = NoShading)
+        Colorbar(fig[1, 2]; colormap = CMAP, limits = (-3, 3), label = "log|ζ| (clipped)", height = Relative(0.6))
         lines!(ax, fill(0.5, length(ys)), collect(ys), fill(-3.0, length(ys)); color = SERIES[2],
                linewidth = 2)
         text!(ax, Point3f(0.5, im[2], -3.0); text = "critical line", color = SERIES[2], fontsize = 12)
@@ -310,9 +315,9 @@ function plot_zeta_spiral(; tmax = 50)
             ax = Axis(fig[1, k]; title = "t ↦ ζ($σ + it), 0 ≤ t ≤ $tmax",
                       subtitle = σ == 0.5 ? "passes through 0 at every zero" : "off the line: misses 0",
                       xlabel = "Re ζ", ylabel = "Im ζ", aspect = DataAspect())
-            lines!(ax, real.(w), imag.(w); color = ts, colormap = SEQ[2:end], linewidth = 1.5)
+            lines!(ax, real.(w), imag.(w); color = ts, colormap = CMAP, linewidth = 1.5)
             scatter!(ax, [0], [0]; color = SERIES[2], markersize = 10)
-            k == 2 && Colorbar(fig[1, 3]; colormap = SEQ[2:end], limits = (0, tmax), label = "t")
+            k == 2 && Colorbar(fig[1, 3]; colormap = CMAP, limits = (0, tmax), label = "t")
         end
         fig
     end
@@ -485,11 +490,14 @@ function plot_heat_flow(; ts = range(-12, 2; length = 36), zmax = 110, step = 0.
         hspan!(ax, 0, 0.2; color = (SERIES[2], 0.15), label = "0 ≤ Λ ≤ 0.2")
         for t in ts
             zs = heat_flow_zeros(t; zmax, step)
-            scatter!(ax, zs ./ 2, fill(t, length(zs)); color = SERIES[1], markersize = 7)
+            scatter!(ax, zs ./ 2, fill(t, length(zs)); color = fill(t, length(zs)), colormap = CMAP,
+                     colorrange = extrema(ts), markersize = 7, strokewidth = 0)
         end
         γ = filter(<(zmax / 2), nontrivial_zeros(30))
-        scatter!(ax, γ, zero(γ); color = SERIES[2], markersize = 11, label = "t = 0: zeros of ζ")
+        scatter!(ax, γ, zero(γ); color = :white, strokecolor = INK, strokewidth = 1.5, markersize = 11,
+                 label = "t = 0: zeros of ζ")
         axislegend(ax; position = :rb)
+        Colorbar(fig[1, 2]; colormap = CMAP, limits = extrema(ts), label = "t")
         fig
     end
 end
@@ -515,6 +523,129 @@ function plot_timeline()
                   align = (right ? :right : :left, :center), offset = (right ? -10 : 10, 0))
         end
         Legend(fig[0, 1], ax; orientation = :horizontal, framevisible = false)
+        fig
+    end
+end
+
+# ── The critical strip: illustrations ────────────────────────────────────────
+
+const _HALO = (glowcolor = (:white, 0.9), glowwidth = 5)
+
+function plot_critical_strip(; tmax = 100, σlims = (-1.5, 2.5), nt = 1400, nσ = 260)
+    _themed() do
+        ts = range(0, tmax; length = nt)
+        σs = range(σlims...; length = nσ)
+        L = Matrix{Float64}(undef, nt, nσ)
+        Threads.@threads for j in 1:nσ
+            for i in 1:nt
+                s = complex(σs[j], ts[i])
+                L[i, j] = s == 1 ? 3.0 : clamp(log(abs(zeta(s))), -3.0, 3.0)
+            end
+        end
+        γ = filter(<(tmax), nontrivial_zeros(round(Int, tmax / 2) + 10))
+        fig = Figure(size = (1400, 560))
+        ax = Axis(fig[1, 1]; title = "The critical strip 0 < Re s < 1",
+                  subtitle = "colour = log|ζ(σ + it)|. Zeros are the dark wells, every one of them on the line Re s = 1/2",
+                  xlabel = "t = Im s", ylabel = "σ = Re s", yticks = [-1, 0, 0.5, 1, 2])
+        heatmap!(ax, ts, σs, L; colormap = CMAP, colorrange = (-3, 3))
+        band!(ax, [0, tmax], [0, 0], [1, 1]; color = (:white, 0.06))
+        hlines!(ax, [0, 1]; color = :white, linewidth = 1.5, linestyle = :dash)
+        hlines!(ax, 0.5; color = :white, linewidth = 1)
+        scatter!(ax, γ, fill(0.5, length(γ)); color = :white, strokecolor = INK, strokewidth = 1.5,
+                 markersize = 10, label = "nontrivial zeros ρ = 1/2 + iγ")
+        scatter!(ax, [0], [1]; color = :black, strokecolor = :white, strokewidth = 1.5, marker = :xcross,
+                 markersize = 14, label = "pole s = 1")
+        x0 = 0.985tmax
+        text!(ax, [x0, x0, x0], [1.75, 0.82, -0.9];
+              text = ["Re s > 1: Euler product ⇒ no zeros",
+                      "Re s = 1: no zeros (⇔ Prime Number Theorem)",
+                      "Re s < 0: mirror image (functional equation), only trivial zeros"],
+              align = (:right, :center), fontsize = 13, color = INK, _HALO...)
+        text!(ax, 0.012tmax, 0.5; text = "critical line\nRe s = 1/2", align = (:left, :center), fontsize = 12,
+              color = INK, _HALO...)
+        limits!(ax, 0, tmax, σlims...)
+        Colorbar(fig[1, 2]; colormap = CMAP, limits = (-3, 3), label = "log|ζ| (clipped)")
+        axislegend(ax; position = :lt, backgroundcolor = (:white, 0.85), framevisible = true, framecolor = (:white, 0))
+        fig
+    end
+end
+
+function plot_strip_schematic(; σlims = (-11, 3.5), tmax = 50)
+    _themed() do
+        γ = filter(<(tmax), nontrivial_zeros(round(Int, tmax / 2) + 10))
+        c_left, c_strip, c_right = VIRIDIS[40], VIRIDIS[128], VIRIDIS[215]
+        fig = Figure(size = (1000, 820))
+        ax = Axis(fig[1, 1]; title = "Where the zeros of ζ live",
+                  subtitle = "three regions of the complex plane, shaded with viridis",
+                  xlabel = "Re s", ylabel = "Im s", xticks = -10:2:4, yticks = -50:10:50)
+        poly!(ax, Rect(σlims[1], -tmax, -σlims[1], 2tmax); color = (c_left, 0.22))
+        poly!(ax, Rect(0, -tmax, 1, 2tmax); color = (c_strip, 0.45))
+        poly!(ax, Rect(1, -tmax, σlims[2] - 1, 2tmax); color = (c_right, 0.30))
+        vlines!(ax, [0, 1]; color = INK2, linewidth = 1, linestyle = :dash)
+        vlines!(ax, 0.5; color = INK, linewidth = 1.5)
+        hlines!(ax, 0; color = MUTED, linewidth = 1)
+        ys = vcat(γ, -γ)
+        scatter!(ax, fill(0.5, length(ys)), ys; color = VIRIDIS[1], strokecolor = :white, strokewidth = 1.2,
+                 markersize = 9, label = "nontrivial zeros (on Re s = 1/2)")
+        tz = filter(>(σlims[1]), trivial_zeros(10))
+        scatter!(ax, tz, zero(tz); color = VIRIDIS[200], strokecolor = INK, strokewidth = 1.2, marker = :rect,
+                 markersize = 10, label = "trivial zeros −2, −4, …")
+        scatter!(ax, [1], [0]; color = :black, strokecolor = :white, strokewidth = 1.5, marker = :xcross,
+                 markersize = 13, label = "pole s = 1")
+        text!(ax, (σlims[1] - 0) / 2, 0.8tmax; text = "Re s < 0\nζ(s) = χ(s) ζ(1−s)\nonly trivial zeros",
+              align = (:center, :center), fontsize = 13, color = INK, _HALO...)
+        text!(ax, -0.25, 0.55tmax; text = "critical strip  0 < Re s < 1  →", align = (:right, :center),
+              fontsize = 13, color = INK, font = :bold, _HALO...)
+        text!(ax, (1 + σlims[2]) / 2, 0.8tmax; text = "Re s > 1\nEuler product\nno zeros",
+              align = (:center, :center), fontsize = 13, color = INK, _HALO...)
+        text!(ax, 0.5, -0.92tmax; text = "symmetric under s ↦ 1 − s and s ↦ s̄", align = (:center, :center),
+              fontsize = 12, color = INK2, _HALO...)
+        limits!(ax, σlims..., -tmax, tmax)
+        axislegend(ax; position = :lb, backgroundcolor = (:white, 0.9), framevisible = true, framecolor = (:white, 0))
+        fig
+    end
+end
+
+function plot_strip_width(; log10tmax = 40)
+    _themed() do
+        fig = Figure(size = (1200, 560))
+        lt = range(log10(2.0), log10tmax; length = 600)
+        Ls = lt .* log(10)
+        δ = [Riemannian._zero_free_width(L, :classical) for L in Ls]
+        hv = log10(RH_VERIFIED_HEIGHT)
+        ax = Axis(fig[1, 1]; title = "Is the band of fixed width?",
+                  subtitle = "The strip is always 0 < σ < 1. What we can prove about where zeros may lie depends on t.",
+                  xlabel = "log₁₀ t", ylabel = "σ = Re s", limits = (lt[1], log10tmax, -0.02, 1.02))
+        band!(ax, [lt[1], log10tmax], [0, 0], [1, 1]; color = (VIRIDIS[128], 0.35),
+              label = "not yet excluded (zeros could hide here)")
+        band!(ax, lt, 1 .- δ, ones(length(lt)); color = VIRIDIS[220], label = "proven zero-free (and mirror at σ ≈ 0)")
+        band!(ax, lt, zeros(length(lt)), δ; color = VIRIDIS[220])
+        mask = lt .≤ hv
+        band!(ax, lt[mask], zeros(count(mask)), ones(count(mask)); color = (VIRIDIS[30], 0.85),
+              label = "t ≤ 3·10¹²: computed, all zeros on the line")
+        hlines!(ax, 0.5; color = :white, linewidth = 2)
+        text!(ax, hv / 2, 0.5; text = "zeros exactly on σ = 1/2", align = (:center, :bottom), offset = (0, 6),
+              color = :white, fontsize = 13)
+        text!(ax, (hv + log10tmax) / 2, 0.5; text = "RH: the band is just this line", align = (:center, :bottom),
+              offset = (0, 6), fontsize = 13, color = INK, _HALO...)
+        δv = Riemannian._zero_free_width(hv * log(10), :classical)
+        text!(ax, hv + 0.5, 0.97; text = "↑ proven zero-free sliver: only ≈ $(round(δv; sigdigits = 2)) wide\n   at t = 3·10¹², and shrinking like 1/log t",
+              align = (:left, :top), fontsize = 12, color = INK, _HALO...)
+        axislegend(ax; position = :rb, backgroundcolor = (:white, 0.9), framevisible = true, framecolor = (:white, 0), labelsize = 12)
+
+        lt2 = range(0.5, 6; length = 600)                     # log10(log10 t) axis: t up to 10^(10^6)
+        L2 = (10 .^ lt2) .* log(10)
+        ax2 = Axis(fig[1, 2]; title = "Width of the proven zero-free margin",
+                   subtitle = "1 − σ₀(t), shrinking to 0: the provable band widens toward width 1",
+                   xlabel = "log₁₀ log₁₀ t", ylabel = "1 − σ₀(t)", yscale = log10)
+        lines!(ax2, lt2, [Riemannian._zero_free_width(L, :classical) for L in L2]; color = SERIES[1],
+               label = "classical: 1/(5.573 log t)  (Mossinghoff–Trudgian)")
+        lines!(ax2, lt2, [Riemannian._zero_free_width(L, :vinogradov_korobov) for L in L2]; color = SERIES[2],
+               label = "Vinogradov–Korobov (Ford)")
+        vlines!(ax2, log10(hv); color = MUTED, linestyle = :dot, linewidth = 1.5)
+        text!(ax2, log10(hv), 1e-2; text = " t = 3·10¹²", fontsize = 11, color = INK2)
+        axislegend(ax2; position = :lb, labelsize = 12)
+        colsize!(fig.layout, 1, Relative(0.55))
         fig
     end
 end
@@ -545,6 +676,9 @@ function gallery(dir::AbstractString = "figures"; px_per_unit = 2, quick = false
         "19_zero_density" => () -> plot_zero_density(),
         "20_heat_flow" => () -> plot_heat_flow(; ts = quick ? range(-12, 2; length = 8) : range(-12, 2; length = 36)),
         "21_timeline" => () -> plot_timeline(),
+        "22_critical_strip" => () -> plot_critical_strip(; nt = quick ? 500 : 1400, nσ = quick ? 100 : 260),
+        "23_strip_schematic" => () -> plot_strip_schematic(),
+        "24_strip_width" => () -> plot_strip_width(),
     ]
     paths = String[]
     for (name, f) in plots

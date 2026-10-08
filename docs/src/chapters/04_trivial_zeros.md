@@ -71,6 +71,10 @@ On ``(0, 1)``, ``\zeta(\sigma) < 0``, because ``\eta(\sigma) > 0`` (an alternati
 shows that the only zeros are at ``-2n``. Every other zero is non-real and lies in the critical strip,
 which is the subject of the next chapter.
 
+```@example ch4
+plot_strip_schematic()
+```
+
 ## Functions in this chapter
 
 [`trivial_zeros`](@ref), [`zeta_negint_exact`](@ref), [`bernoulli`](@ref), [`chi_factor`](@ref), [`zeta`](@ref).

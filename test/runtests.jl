@@ -66,6 +66,10 @@ using Test
         @test check_zeros(300).all_on_line
         @test length(nontrivial_zeros(1000)) == 1000
         @test issorted(nontrivial_zeros(1000))
+        @test zero_free_boundary(1e12) ≈ 1 - 1 / (5.573412 * log(1e12))
+        @test zero_free_boundary(10.0^100) > zero_free_boundary(1e12)          # margin shrinks
+        @test all(t -> abs(zeta(complex(zero_free_boundary(t), t))) > 0.01, 10.0:10.0:1000.0)
+        @test RH_VERIFIED_HEIGHT == 3e12
     end
 
     @testset "explicit formulas" begin

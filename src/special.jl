@@ -4,6 +4,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 
 const _BERNOULLI = Rational{BigInt}[1 // 1]          # B₀
+const _CACHE_LOCK = ReentrantLock()     # caches are filled lazily, possibly from several threads
 
 """
     bernoulli(n) -> Rational{BigInt}
@@ -13,6 +14,13 @@ B₂ = 1/6, B₄ = −1/30, … — they give ζ(2k) and ζ(1−2k) exactly.
 """
 function bernoulli(n::Integer)
     n ≥ 0 || throw(DomainError(n))
+    return lock(_CACHE_LOCK) do
+        _extend_bernoulli!(n)
+        _BERNOULLI[n+1]
+    end
+end
+
+function _extend_bernoulli!(n)
     while length(_BERNOULLI) ≤ n
         m = length(_BERNOULLI)                       # computing B_m
         if m > 1 && isodd(m)
@@ -25,7 +33,6 @@ function bernoulli(n::Integer)
         end
         push!(_BERNOULLI, -s / (m + 1))
     end
-    return _BERNOULLI[n+1]
 end
 
 const _COEFF_CACHE = Dict{Any,Any}()
@@ -33,16 +40,20 @@ const _COEFF_CACHE = Dict{Any,Any}()
 # B_{2k}/(2k)!  for k = 1..M, converted once per float type/precision.
 function _em_coeffs(::Type{T}, M::Int) where {T}
     key = (:em, T, precision(T), M)
-    get!(_COEFF_CACHE, key) do
-        T[T(bernoulli(2k) / factorial(big(2k))) for k in 1:M]
+    lock(_CACHE_LOCK) do
+        get!(_COEFF_CACHE, key) do
+            T[T(bernoulli(2k) / factorial(big(2k))) for k in 1:M]
+        end
     end::Vector{T}
 end
 
 # B_{2k}/(2k(2k−1)) for Stirling's series.
 function _stirling_coeffs(::Type{T}, M::Int) where {T}
     key = (:stirling, T, precision(T), M)
-    get!(_COEFF_CACHE, key) do
-        T[T(bernoulli(2k) / (2k * (2k - 1))) for k in 1:M]
+    lock(_CACHE_LOCK) do
+        get!(_COEFF_CACHE, key) do
+            T[T(bernoulli(2k) / (2k * (2k - 1))) for k in 1:M]
+        end
     end::Vector{T}
 end
 

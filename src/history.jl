@@ -160,7 +160,12 @@ NONTRIVIAL ZEROS AND THE CRITICAL STRIP
   Counting: N(T) = θ(T)/π + 1 + S(T) ≈ (T/2π) log(T/2πe) + 7/8.
   Verification: count sign changes of the real function Z(t) and compare with N(T)
   from the argument principle. If they agree, every zero up to T is on the line.
-  Try: nontrivial_zeros(10), hardy_Z(14.134725), zero_count(100), check_zeros(1000)
+  IS THE BAND OF FIXED WIDTH? The strip 0 < Re s < 1 is: it is what the Euler product and the
+  functional equation leave open. But the band where zeros might still hide is not: up to
+  t = 3·10¹² it has width 0 (verified), above that only zero-free slivers of width ≈ 1/(5.57 log t)
+  are excluded, and they shrink as t grows. Almost all zeros lie within any ε of the line (Bohr–Landau).
+  Try: nontrivial_zeros(10), hardy_Z(14.134725), zero_count(100), check_zeros(1000),
+       zero_free_boundary(1e12), plot_critical_strip(), plot_strip_width(), plot_strip_schematic()
        gram_law_violations(200), plot_critical_line(), plot_domain_coloring(),
        plot_zeta_spiral(), plot_zero_counting(), plot_xi()
 """,

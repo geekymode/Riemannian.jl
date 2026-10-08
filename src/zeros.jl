@@ -262,3 +262,39 @@ function close_pairs(γs::AbstractVector; k::Integer = 10)
     idx = partialsortperm(δ, 1:min(k, length(δ)))
     return [(γ1 = γs[i], γ2 = γs[i+1], spacing = δ[i]) for i in idx]
 end
+
+# ── how wide is the band where zeros can be? ─────────────────────────────────
+
+"""
+    RH_VERIFIED_HEIGHT
+
+All nontrivial zeros with 0 < Im ρ ≤ 3·10¹² lie on the critical line (Platt & Trudgian, 2021).
+Below this height the "band" of possible zeros has width 0.
+"""
+const RH_VERIFIED_HEIGHT = 3.0e12
+
+# Width δ of the proven zero-free sliver σ > 1 − δ, as a function of L = log t (avoids overflow).
+function _zero_free_width(L::Real, method::Symbol)
+    if method === :classical
+        return 1 / (5.573412 * L)
+    elseif method === :vinogradov_korobov
+        return 1 / (57.54 * L^(2 / 3) * log(L)^(1 / 3))
+    else
+        throw(ArgumentError("method must be :classical or :vinogradov_korobov"))
+    end
+end
+
+"""
+    zero_free_boundary(t; method = :classical) -> σ₀
+
+Proven zero-free region: ζ(σ + it) ≠ 0 for σ ≥ σ₀(t). By the functional equation also for σ ≤ 1 − σ₀(t).
+
+* `:classical` — de la Vallée Poussin shape, explicit constant of Mossinghoff & Trudgian (2015):
+  σ₀ = 1 − 1/(5.573412 log t), valid for t ≥ 2.
+* `:vinogradov_korobov` — explicit Vinogradov–Korobov region of Ford (2002):
+  σ₀ = 1 − 1/(57.54 (log t)^{2/3} (log log t)^{1/3}), valid for t ≥ 3; better only for log t ≳ 10⁴.
+
+The sliver width 1 − σ₀ → 0 as t → ∞: what we can *prove* about the band of possible zeros
+approaches the full critical strip of width 1. RH says the band is the single line Re s = 1/2.
+"""
+zero_free_boundary(t::Real; method::Symbol = :classical) = 1 - _zero_free_width(log(t), method)

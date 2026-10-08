@@ -6,7 +6,7 @@ set_theme!(riemann_theme())
 ```
 
 Every figure in Riemannian, with the call that produced it. All plotting functions take keyword
-arguments; see the [API reference](@ref api-plotting).
+arguments; see the [API reference](@ref api-plotting). Continuous colour scales use **viridis**.
 
 ## Primes
 
@@ -48,6 +48,20 @@ plot_domain_coloring(re = (-30, 10), im = (-5, 60), n = 500)
 
 ```@example gal
 plot_modulus_surface(re = (-0.5, 1.5), im = (10, 50))
+```
+
+## The critical strip
+
+```@example gal
+plot_strip_schematic()
+```
+
+```@example gal
+plot_critical_strip(tmax = 150)
+```
+
+```@example gal
+plot_strip_width()
 ```
 
 ## The critical line

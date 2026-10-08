@@ -41,7 +41,7 @@ CairoMakie is a weak dependency, and `using CairoMakie` activates `ext/Riemannia
 | **2. ζ on the real line / Euler** | `bernoulli` `zeta_even_exact` `zeta_negint_exact` `dirichlet_partial` `euler_product_partial` |
 | **3. Analytic continuation** | `eta_partial` `zeta_borwein` (η-series) · `zeta_em` (Euler–Maclaurin) · `zeta` (any s, any float type incl. `BigFloat`) · `chi_factor` · `completed_zeta` · `xi` · `Xi` |
 | **4. Trivial zeros** | `trivial_zeros`, exact `ζ(−n)` via Bernoulli numbers, `explain(:trivial_zeros)` |
-| **5. Nontrivial zeros** | `riemann_siegel_theta` `hardy_Z` `riemann_siegel_Z` `gram_point` `gram_law_violations` `argzeta_S` `zero_count` `zeros_between` `nontrivial_zeros` `check_zeros` `close_pairs` |
+| **5. Nontrivial zeros** | `riemann_siegel_theta` `hardy_Z` `riemann_siegel_Z` `gram_point` `gram_law_violations` `argzeta_S` `zero_count` `zeros_between` `nontrivial_zeros` `check_zeros` `close_pairs` `zero_free_boundary` `RH_VERIFIED_HEIGHT` |
 | **6. Explicit formulas** | `psi_explicit` `riemann_J` `riemann_J_explicit` `primepi_explicit` |
 | **7. Random matrices** | `normalized_spacings` `pair_correlation` `wigner_gue` `wigner_goe` `montgomery_pair_correlation` `gue_spacings` |
 | **8. Equivalents & bounds** | `robin_violations` `lagarias_violations` `li_coefficient` `LI_LAMBDA1` `mertens_ratio_max` `zero_density_exponents` |
@@ -54,7 +54,12 @@ CairoMakie is a weak dependency, and `using CairoMakie` activates `ext/Riemannia
 `plot_zeta_real` · `plot_analytic_continuation` · `plot_domain_coloring` · `plot_modulus_surface` ·
 `plot_critical_line` · `plot_zeta_spiral` · `plot_zero_counting` · `plot_xi` · `plot_explicit_formula` ·
 `plot_prime_staircase` · `plot_spacing_distribution` · `plot_pair_correlation` · `plot_robin` ·
-`plot_zero_density` · `plot_heat_flow` · `plot_timeline` · `gallery`
+`plot_zero_density` · `plot_heat_flow` · `plot_timeline` · `plot_critical_strip` · `plot_strip_schematic` ·
+`plot_strip_width` · `gallery`
+
+Continuous colour scales use **viridis**.
+
+![critical strip](figures/22_critical_strip.png)
 
 | | |
 |---|---|

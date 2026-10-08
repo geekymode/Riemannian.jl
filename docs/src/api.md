@@ -83,6 +83,8 @@ zeros_between
 nontrivial_zeros
 check_zeros
 close_pairs
+RH_VERIFIED_HEIGHT
+zero_free_boundary
 ```
 
 ## Explicit formulas
@@ -164,6 +166,9 @@ plot_robin
 plot_zero_density
 plot_heat_flow
 plot_timeline
+plot_critical_strip
+plot_strip_schematic
+plot_strip_width
 gallery
 ```
 
